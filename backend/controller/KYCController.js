@@ -1,5 +1,5 @@
 import { fileScheme } from "../model/FileModelSchema.js";
-
+import multer from "multer";
 import { upload } from "../config/multer.js"; // Assuming multer setup is correct
 
 // POST route to upload three images
@@ -17,7 +17,7 @@ export const uploadImages = (req, res) => {
     }
 
     try {
-      const { userId } = req.body; // Extract userId from the request body
+      const { userId } = req.body;
       console.log(userId);
       console.log(req.files);
 
@@ -93,8 +93,18 @@ export const UpdateStatusImage = async (req, res) => {
     const updatedFile = {
       ...response.toObject(),
       [`${fileNumber}Status`]: status,
-      [`${fileNumber}Reason`]: reason,
     };
+    if (
+      updatedFile.file1Status === "approved" &&
+      updatedFile.file2Status === "approved" &&
+      updatedFile.file3Status === "approved"
+    ) {
+      updatedFile[`OverAllStatus`] = "approved";
+    }
+    // Only update the reason if it is provided
+    if (reason) {
+      updatedFile[`${fileNumber}Reason`] = reason;
+    }
 
     // Save the updated document
     const result = await fileScheme.findByIdAndUpdate(id, updatedFile, {
@@ -121,9 +131,51 @@ export const GetimageByID = async (req, res) => {
     if (!response) {
       return res.status(404).json({ message: "File not found." });
     }
-    console.log(response);
     res.status(200).json(response);
   } catch (error) {
     console.error("Error getting file by ID:", error);
   }
+};
+
+export const updatedFile = async (req, res) => {
+  // Use multer or another middleware-less approach if needed
+  upload.single("file")(req, res, async (err) => {
+    if (err) {
+      return res.status(500).send({ error: "File upload failed." });
+    }
+
+    try {
+      const { fileNumber, id } = req.body; // Extract fields from the request body
+      const fileData = req.file?.buffer; // Extract the uploaded file buffer
+
+      // Validate required fields
+      if (!fileNumber || !id) {
+        return res.status(400).send({ error: "Missing fileNumber or id." });
+      }
+
+      if (!["file1", "file2", "file3"].includes(fileNumber)) {
+        return res.status(400).send({ error: "Invalid file number." });
+      }
+
+      if (!fileData) {
+        return res.status(400).send({ error: "No file uploaded." });
+      }
+
+      // Find the user's record in the database
+      const existData = await fileScheme.findOne({ userId: id });
+
+      if (!existData) {
+        return res.status(404).send({ error: "Data not found." });
+      }
+
+      // Dynamically update the correct file field with the uploaded data
+      existData[fileNumber] = fileData;
+      await existData.save(); // Save changes to the database
+
+      res.status(200).send({ message: "File updated successfully." });
+    } catch (error) {
+      console.error("Error updating file:", error);
+      res.status(500).send({ error: "Internal Server Error." });
+    }
+  });
 };

@@ -40,7 +40,6 @@ function FetchImage() {
       );
 
       if (response.status === 200) {
-        console.log(response.data.message);
         // Update the local state to reflect the status change
         setData((prevData) =>
           prevData.map((item) =>
@@ -65,7 +64,7 @@ function FetchImage() {
         <Row xs={1} md={2} lg={3} className="g-4">
           {data.map((item, index) => (
             <Col key={index}>
-              <Card className="h-100">
+              <Card className="h-100 shadow-sm p-3">
                 <Card.Body className="d-flex flex-column align-items-center">
                   <Card.Title>User ID: {item.userId} </Card.Title>
                   <Card.Text>
@@ -81,11 +80,27 @@ function FetchImage() {
                               objectFit: "cover",
                             }}
                           />
-                          <p>Status: {item[`${fileKey}Status`] || "Pending"}</p>
-                          <Dropdown className="mt-3">
+                          <div className="mt-2">
+                            <strong>Status: </strong>
+                            <span
+                              className={`badge ${
+                                item[`${fileKey}Status`] === "approved"
+                                  ? "bg-success"
+                                  : item[`${fileKey}Status`] === "rejected"
+                                  ? "bg-danger"
+                                  : "bg-secondary"
+                              }`}
+                            >
+                              {item[`${fileKey}Status`] || "Pending"}
+                            </span>
+                          </div>
+
+                          {/* Dropdown for Approve/Reject */}
+                          <Dropdown className="mt-3 w-100">
                             <Dropdown.Toggle
                               variant="success"
                               id={`dropdown-${fileKey}`}
+                              className="w-100"
                             >
                               Approve/Reject {fileKey}
                             </Dropdown.Toggle>
@@ -106,19 +121,27 @@ function FetchImage() {
                               </Dropdown.Item>
                             </Dropdown.Menu>
                           </Dropdown>
-                          <input
-                            type="text"
-                            placeholder="Reason for rejection"
-                            value={reasons[`${item._id}-${fileKey}`] || ""}
-                            onChange={(e) =>
-                              handleReasonChange(
-                                item._id,
-                                fileKey,
-                                e.target.value
-                              )
-                            }
-                            className="mt-2 form-control"
-                          />
+
+                          {/* Reason Input aligned horizontally */}
+                          <div
+                            className="d-flex align-items-center mt-3 "
+                            style={{ marginLeft: "200px" }}
+                          >
+                            <input
+                              type="text"
+                              placeholder="Reason for rejection"
+                              value={reasons[`${item._id}-${fileKey}`] || ""}
+                              onChange={(e) =>
+                                handleReasonChange(
+                                  item._id,
+                                  fileKey,
+                                  e.target.value
+                                )
+                              }
+                              className="form-control"
+                              style={{ maxWidth: "200px", marginRight: "8px" }}
+                            />
+                          </div>
                         </div>
                       ) : null
                     )}

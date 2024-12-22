@@ -6,9 +6,27 @@ import axios from "axios";
 function YupValidation() {
   const validationSchema = Yup.object().shape({
     userId: Yup.string().required("User ID is required"),
-    file1: Yup.mixed().required("File 1 is required"),
-    file2: Yup.mixed().required("File 2 is required"),
-    file3: Yup.mixed().required("File 3 is required"),
+    file1: Yup.mixed()
+      .required("File 1 is required")
+      .test(
+        "fileSize",
+        "File 1 is too large (max 2MB)",
+        (value) => !value || (value && value[0]?.size <= 2 * 1024 * 1024) // max 2MB
+      ),
+    file2: Yup.mixed()
+      .required("File 2 is required")
+      .test(
+        "fileSize",
+        "File 2 is too large (max 2MB)",
+        (value) => !value || (value && value[0]?.size <= 2 * 1024 * 1024) // max 2MB
+      ),
+    file3: Yup.mixed()
+      .required("File 3 is required")
+      .test(
+        "fileSize",
+        "File 3 is too large (max 2MB)",
+        (value) => !value || (value && value[0]?.size <= 2 * 1024 * 1024) // max 2MB
+      ),
   });
 
   const {
@@ -63,6 +81,7 @@ function YupValidation() {
           />
           <div className="invalid-feedback">{errors.userId?.message}</div>
         </div>
+
         <div className="form-group">
           <label>File 1</label>
           <input
@@ -73,6 +92,7 @@ function YupValidation() {
           />
           <div className="invalid-feedback">{errors.file1?.message}</div>
         </div>
+
         <div className="form-group">
           <label>File 2</label>
           <input
@@ -83,6 +103,7 @@ function YupValidation() {
           />
           <div className="invalid-feedback">{errors.file2?.message}</div>
         </div>
+
         <div className="form-group">
           <label>File 3</label>
           <input

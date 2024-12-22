@@ -7,15 +7,12 @@ const fileUploadSchema = new mongoose.Schema({
   },
   file1: {
     type: Buffer,
-    required: true,
   },
   file2: {
     type: Buffer,
-    required: true,
   },
   file3: {
     type: Buffer,
-    required: true,
   },
   file1Status: {
     type: String,

@@ -15,7 +15,7 @@ function FetchImageByID() {
     setError(null);
     try {
       const response = await axios.get(
-        `http://127.0.0.1:8000/fetchImagesByid/543210`
+        `http://127.0.0.1:8000/fetchImagesByid/7894561230`
       );
       setResponses(response.data[0]);
     } catch (err) {
@@ -26,20 +26,21 @@ function FetchImageByID() {
     }
   }
 
-  const handleFileUpload = async (fileKey) => {
+  const handleFileUpload = async (fileKey, id, newFile) => {
     if (!file) {
       setUploadError("Please select a file to upload.");
       return;
     }
-
     const formData = new FormData();
-    formData.append("file", file);
+    formData.append("id", id);
+    formData.append("file", newFile);
+    formData.append("fileNumber", fileKey);
 
     setUploading(true);
     setUploadError(null);
     try {
-      const uploadResponse = await axios.post(
-        `http://127.0.0.1:8000/uploadFile/${responses.userId}/${fileKey}`,
+      const uploadResponse = await axios.put(
+        `http://127.0.0.1:8000/updatefile`,
         formData,
         {
           headers: {
@@ -50,7 +51,7 @@ function FetchImageByID() {
 
       if (uploadResponse.status === 200) {
         alert("File uploaded successfully!");
-        fetchById(); // Refresh the data
+        fetchById();
       }
     } catch (err) {
       setUploadError("File upload failed. Please try again.");
@@ -110,7 +111,9 @@ function FetchImageByID() {
                       <Button
                         variant="success"
                         className="mt-2"
-                        onClick={() => handleFileUpload(fileKey)}
+                        onClick={() =>
+                          handleFileUpload(fileKey, responses.userId, file)
+                        }
                         disabled={uploading}
                       >
                         {uploading ? "Uploading..." : "Upload New File"}
